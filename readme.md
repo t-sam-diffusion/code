@@ -1,43 +1,60 @@
 # Text Embedding is Not All You Need: Attention Control for Text-to-Image Alignment
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![arXiv](https://img.shields.io/badge/arXiv-Preprint-red)](https://arxiv.org/abs/2411.15236)
-[![Project Page](https://img.shields.io/badge/project-page-brightgreen)](https://t-sam-diffusion.github.io/)
 
-<!-- ## Description -->
+> 📢 **News**: Our paper has been **accepted to CVPR 2025**! 🎉
 
-This repository accompanies the preprint published on [arXiv](https://arxiv.org/abs/2411.15236). It introduces a novel approach to improve the text-to-image alignment in diffusion models.
 
-For more details, visit the [Project Page](https://t-sam-diffusion.github.io/).
+This repository accompanies the preprint published on arXiv. It introduces a novel approach to improve text-to-image alignment in diffusion models.
 
-<!-- ## Table of Contents
+> Check out the details on the 👉 [Project Page](https://t-sam-diffusion.github.io)
 
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Examples](#examples)
-- [Paper](#paper)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
+## Overview
 
-## Features
+This codebase implements attention control mechanisms to enhance text-to-image alignment in diffusion models. It includes modules for evaluation, model definitions, prompt handling, and utility functions.
 
-- [Feature 1: Brief description]
-- [Feature 2: Brief description]
-- Supports [list supported scenarios, frameworks, or tools].
-- Extensible with [describe flexibility if relevant].
+## Repository Structure
 
-## Installation
+- `evaluation_codes/`: Scripts for evaluating model performance
+- `metrics/`: Custom metrics for assessing alignment quality
+- `models/`: Model architectures and related components
+- `prompt_classes/`: Classes for handling different prompt types
+- `prompt_files/`: Sample prompts and resources
+- `sim_optmization/`: Similarity optimization routines
+- `utils/`: Utility functions and helpers
+- `evaluate.py`: Main evaluation script
+- `new_work_desk.py`, `work_desk.py`, `work_desk_latent_update.py`: Latent update and processing tools
 
-Follow these steps to set up the project:
+## Getting Started
+
+### Prerequisites
+
+- Python 3.8+
+- PyTorch 1.10+
+- Additional dependencies listed in `requirements.txt`
+
+### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/your-repo.git
+git clone https://github.com/t-sam-diffusion/code.git
+cd code
+pip install -r requirements.txt
+```
+## Usage
 
-# Navigate to the project directory
-cd your-repo
+To evaluate the model:
 
-# Install dependencies
-pip install -r requirements.txt -->
+```bash
+python evaluate.py --config configs/eval_config.yaml
+```
+
+
+## Citation
+If you use this code, please cite:
+```bash
+@article{kim2024text,
+  title={Text Embedding is Not All You Need: Attention Control for Text-to-Image Semantic Alignment with Text Self-Attention Maps},
+  author={Kim, Jeeyung and Esmaeili, Erfan and Qiu, Qiang},
+  journal={arXiv preprint arXiv:2411.15236},
+  year={2024}
+}
+```
