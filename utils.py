@@ -5,14 +5,7 @@ import numpy as np
 import json
 from models.sd1_5.clip_sdpa_attention_x import CLIPSdpaAttentionX
 from models.sd1_5.storage_sd1_5 import  AttnFetchSDX_3
-from models.pixart.pipeline_pixart_alpha_x import PixArtAlphaPipelineX
-from models.pixart.storage_pixart_x import AttnFetchPixartX
-
 from models.sd1_5.pipeline_stable_diffusion_x_2 import StableDiffusionPipelineX_2
-from models.sd1_5.pipeline_stable_diffusion_x import StableDiffusionPipelineX
-from diffusers import StableDiffusionPipeline
-from diffusers.schedulers.scheduling_ddim import DDIMScheduler
-from diffusers import PixArtAlphaPipeline
 from dataclasses import dataclass
 from typing import Optional, List, Tuple
 from transformers import CLIPTokenizer
@@ -66,16 +59,6 @@ def load_model(model_name,device, **kwargs):
             spda_x.load_state_dict(new_state_dict)
             model.text_encoder.text_model.encoder.layers[i].self_attn = spda_x
             
-
-
-    elif model_name == 'pixart_x':
-        model_class = PixArtAlphaPipelineX
-        model_id = "PixArt-alpha/PixArt-XL-2-512x512"
-        model = model_class.from_pretrained(pretrained_model_name_or_path=model_id,torch_dtype = torch.float16)
-        model.to(device)
-        model.attn_fetch_x = AttnFetchPixartX()
-        model.attn_fetch_x.positive_prompt = True
-
     else:
         raise RuntimeError('model not accepted')
     

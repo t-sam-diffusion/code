@@ -3,7 +3,7 @@ import torch
 import os
 import torch.nn.functional as F
 from typing import List
-from new_utils import (load_model,
+from utils import (load_model,
                        save_image,
                        save_text_sa_avg,
                        get_token_ids,
