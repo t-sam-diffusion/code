@@ -2,18 +2,8 @@
 
 import torch
 from typing import Dict
-# from models.pixart.t5_attention_x import T5AttentionX
-from models.processors import *
 
-# def get_processor_class(processor_name):
-#     processor_classes = {
-#         'processor_x': AttnProcessorX,
-#         'processor_3': AttnProcessor3,
-#         'processor_x_2': AttnProcessorX_2,
-#         'processor_x_conform': AttnProcessorXCONFORM
-# }
-
-    # return processor_classes[processor_name]
+from models.processors import AttnProcessorX_2
 
 def to_cpu_numpy(data):
     if isinstance(data, torch.Tensor):
@@ -44,6 +34,7 @@ class AttnFetchPixartX():
     def __init__(self,positive_prompt:bool = True):
         self.storage = {}
         self.positive_prompt = positive_prompt
+        
     def get_timestep(self):
         timestep = self.unet.timestep.item()
         
@@ -74,32 +65,15 @@ class AttnFetchPixartX():
         
         return attn_data
 
-    def set_processor(self,transformer,processor_name):
-        processors= {}
-        for i, layer in enumerate(transformer.attn_processors.keys()):
+    def set_processor(self,transformer,processor_name, index_data):
+        processor_classes = {'processor_x':AttnProcessorX_2,
+                                 'processor_3': AttnProcessor3,}
+       
+        processors = {}
 
-            processor = get_processor_class(processor_name=processor_name)()
+        for layer in transformer.attn_processors.keys():
+            processor = processor_classes[processor_name](idx1 =index_data['obj_1'], idx2 = index_data['obj_2'],eos_idx = index_data['eos'])
+
             processors[layer] = processor
+            
         transformer.set_attn_processor(processors)
-        
-        
-        
-    #text_encoder maps:
-    def store_text_sa(self,text_encoder):
-        attn_data = {}
-    
-        for i, block in enumerate(text_encoder.encoder.block):
-                data = block.layer[0].SelfAttention.attn_weights_x
-                #avg over heads
-                data = torch.mean(data.squeeze(),dim=0)
-                attn_data[f'block_{i}'] = data
-
-        return attn_data
-    
-        
-    # def set_text_processor(self, text_encoder):
-    #     for block in text_encoder.encoder.block:
-    #         block.layer[0].SelfAttention = T5AttentionX(
-    #             config=text_encoder.config,
-    #             has_relative_attention_bias=False
-    #         ).to(text_encoder.device)

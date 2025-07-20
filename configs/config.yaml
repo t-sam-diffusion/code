@@ -1,0 +1,22 @@
+guidance_scale: 7.5
+max_iter_to_alter: 30
+iterative_refinement_steps: [0, 10, 20]
+refinement_steps: 20
+scale_factor: 5
+attn_res: [16, 16]
+do_smoothing: true
+smoothing_sigma: 0.5
+smoothing_kernel_size: 3
+temperature: 0.5
+softmax_normalize: false
+softmax_normalize_attention_maps: false
+add_previous_attention_maps: true
+previous_attention_map_anchor_step: null
+loss_fn: "ntxent"
+k: 3
+attn_like_loss: null
+cos1_or_cos2: null
+loss_type: null
+row_weight: null
+update_latent: true
+cos_sim_dir: "./cross_attn"

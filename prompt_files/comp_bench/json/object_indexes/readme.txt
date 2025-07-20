@@ -1,2 +1,0 @@
-Each file contains a dictionary with keys of the form "obj_n_1" and "obj_n_2" where n goes over all prompt indexes in the .txt files.
-for "obj_n_1", the values is the list of token_ids after obj_1 in the prompt is tokenized. the same for "obj_n_2".

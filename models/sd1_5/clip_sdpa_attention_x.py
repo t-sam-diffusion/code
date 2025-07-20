@@ -32,10 +32,21 @@ class CLIPSdpaAttentionX(CLIPAttention):
     def __init__(self, config):
         super().__init__(config)
         self.dummy = 0
+        
     def get_attention_scores(
         self, query: torch.Tensor, key: torch.Tensor, attention_mask: Optional[torch.Tensor] = None
     ) -> torch.Tensor:
-    
+        r"""
+        Compute the attention scores.
+
+        Args:
+            query (`torch.Tensor`): The query tensor.
+            key (`torch.Tensor`): The key tensor.
+            attention_mask (`torch.Tensor`, *optional*): The attention mask to use. If `None`, no mask is applied.
+
+        Returns:
+            `torch.Tensor`: The attention probabilities/scores.
+        """
         dtype = query.dtype
 
         # if self.upcast_attention:
@@ -59,7 +70,6 @@ class CLIPSdpaAttentionX(CLIPAttention):
         else:
             baddbmm_input = attention_mask
             beta = 1
-     
 
         attention_scores = torch.baddbmm(
             baddbmm_input,
@@ -70,6 +80,9 @@ class CLIPSdpaAttentionX(CLIPAttention):
         )
         del baddbmm_input
 
+        # if self.upcast_softmax:
+
+        #     attention_scores = attention_scores.float()
 
         attention_probs = attention_scores.softmax(dim=-1)
         del attention_scores
@@ -115,8 +128,6 @@ class CLIPSdpaAttentionX(CLIPAttention):
         key_states = self.k_proj(hidden_states)
         value_states = self.v_proj(hidden_states)
 
-        input_states = hidden_states
-        
         query_states = query_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2)
         key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2)
         value_states = value_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2)
@@ -129,7 +140,14 @@ class CLIPSdpaAttentionX(CLIPAttention):
             value_states = value_states.contiguous()
 
         # CLIP text model uses both `causal_attention_mask` and `attention_mask` sequentially.
-
+        # attn_output = torch.nn.functional.scaled_dot_product_attention(
+        #     query_states,
+        #     key_states,
+        #     value_states,
+        #     attn_mask=attn_mask,
+        #     dropout_p=self.dropout if self.training else 0.0,
+        #     scale=self.scale,
+        # )
         ##########_X
         attention_probs = self.get_attention_scores(
             query_states,
@@ -138,63 +156,39 @@ class CLIPSdpaAttentionX(CLIPAttention):
             # dropout_p=self.dropout if self.training else 0.0,
         )
         
-        # print(torch.mean(attention_probs[:,10,:],dim =0))
-        def get_probs(probs,value_states,input_states):
-            attn = torch.clone(probs)
-            for i in range(1,77):
-
-                attn[:,i,1:i+1] = torch.mean(attn[:,i,1:i+1],dim=-1,keepdim = True)
-                # torch.mean(probs[:,i,1:i+1],dim = -1,keepdim = True)
-                # attn_probs_[:,i,0] = 1
-                # print('new,attn_probs_[3,i,:20])
-            value_states = value_states.squeeze()
-            hidden_states = torch.bmm(attn, value_states)
-            attn_output = hidden_states.unsqueeze(0)
-            # print(torch.mean(probs[:,:10,:10],dim=0))
-            # print('new',torch.mean(attn[:,:10,:10],dim = 0))
-        ##########
-            attn_output = attn_output.transpose(1, 2)
-            attn_output = attn_output.reshape(bsz, tgt_len, embed_dim)
-
-            out = self.out_proj(attn_output)
-            # print(attn_prprobs_)
-            return out
-
-        out = get_probs(probs=attention_probs,value_states = value_states,input_states = input_states)
-
-        # breakpoint()
-        
         shapes = attention_probs.shape
         attn_re = attention_probs.reshape(bsz, self.num_heads, shapes[-2], shapes[-1])
 
+        # attention_probs = attn_re.reshape(bsz* self.num_heads, shapes[-2], shapes[-1])
+
         value_states = value_states.squeeze()
-        
         hidden_states = torch.bmm(attention_probs, value_states)
 
 
+        # hidden_states = self.batch_to_head_dim(hidden_states)
+        # print(self.dummy)
         ######_x
         if attention_probs.size()[-1] in [120,77]:
+            # batch = 1 if self.positive_prompt else 0
             if self.dummy == 0:
                 self.attn_data_x = torch.mean(attn_re,dim=1).squeeze()
+                # print("store data")
         ######_x
-        self.dummy = 1
         
-
+        self.dummy = 1
         
         attn_output = hidden_states.to(query_states.dtype)
         attn_output = attn_output.unsqueeze(0)
-
+        # linear proj
+        # hidden_states = self.to_out[0](hidden_states)
+        # # dropout
+        # attn_output = self.to_out[1](hidden_states)
         ##########
         attn_output = attn_output.transpose(1, 2)
         attn_output = attn_output.reshape(bsz, tgt_len, embed_dim)
 
         attn_output = self.out_proj(attn_output)
 
-        
-        output = torch.einsum('bij,bnj->bin',out-attn_output,input_states)
-        import numpy as np 
-        # torch.set_printoptions(precision=3)
-        # out = out.detach().cpu().numpy()
-        # breakpoint()
         return attn_output, None
-
+    
+    
